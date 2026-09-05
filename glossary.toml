@@ -1,0 +1,76 @@
+# glossary.toml — vocabulary data of the palette: tmux-jargon synonym
+# groups and human full forms for generated personal aliases.
+#
+# [[jargon]] — one entry per jargon word. The command's bare form is
+# scanned for whole jargon words; each found word contributes its group
+# of everyday synonyms to the generated alias and to --check coverage.
+# Group keys are context words present in the command ("default" — no
+# context), first matching context wins, "default" always does.
+#
+# [[phrase]] — exact command (as in a binding) -> human full form. The
+# generated alias is the form plus the remaining group words after a comma;
+# the parts are independent — see generate_alias. Stock tmux commands only
+# — personal bindings stay out.
+
+[[jargon]]
+    word = "window"
+    default = ["tab"]
+
+[[jargon]]
+    word = "kill"
+    default = ["close", "remove", "delete"]
+    session = ["close", "terminate", "exit", "quit"]
+
+[[jargon]]
+    word = "buffer"
+    default = ["clipboard"]
+
+[[jargon]]
+    word = "swap"
+    default = ["exchange", "move"]
+
+[[phrase]]
+    command = "kill-pane"
+    phrase = "close pane"
+[[phrase]]
+    command = "kill-window"
+    phrase = "close tab"
+[[phrase]]
+    command = "kill-session"
+    phrase = "terminate current session"
+[[phrase]]
+    command = "swap-window"
+    phrase = "swap tab"
+[[phrase]]
+    command = "swap-pane"
+    phrase = "swap panes"
+[[phrase]]
+    command = "swap-pane -U"
+    phrase = "swap pane up"
+[[phrase]]
+    command = "swap-pane -D"
+    phrase = "swap pane down"
+[[phrase]]
+    command = "split-window"
+    phrase = "new pane below"
+[[phrase]]
+    command = "split-window -h"
+    phrase = "new pane right"
+[[phrase]]
+    command = "rotate-window"
+    phrase = "rotate panes"
+[[phrase]]
+    command = "choose-buffer"
+    phrase = "choose clipboard"
+[[phrase]]
+    command = "choose-buffer -Z"
+    phrase = "choose clipboard"
+[[phrase]]
+    command = "delete-buffer"
+    phrase = "delete clipboard"
+[[phrase]]
+    command = "list-buffers"
+    phrase = "list clipboards"
+[[phrase]]
+    command = "paste-buffer -p"
+    phrase = "paste last clipboard"
