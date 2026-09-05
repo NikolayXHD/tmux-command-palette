@@ -1,0 +1,4 @@
+__pycache__/
+palette.generated.toml
+palette.example.toml
+tmux-command-palette.toml
