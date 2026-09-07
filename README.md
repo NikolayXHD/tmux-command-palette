@@ -8,38 +8,45 @@ Command palette for tmux, in the spirit of VS Code and other GUI software.
 Trigger the palette via hotkey, type what you want — "new tab", "move pane",
 hit `Enter` to execute.
 
-By default, palette is bound to `Prefix + ?`.
-
 ![Screenshot](screenshot.png)
 
 ## Installation
 
-Requirements
+### 0. Prerequisites
 
 - tmux 3.7+
 - Systemwide python 3.11+
 - [fzf](https://github.com/junegunn/fzf)
 - [tpm](https://github.com/tmux-plugins/tpm)
 
-Add to `~/.tmux.conf`:
+### 1. Edit tmux config
+
+Add the plugin to your tmux config:
 
 ```tmux
 set -g @plugin 'NikolayXHD/tmux-command-palette'
 ```
 
-In tmux press `Prefix + I` to install the plugin.
-
-## Bind a to different hotkey
-
-To open the palette with **Ctrl + Shift + P**, similar to vscode, add this to
-`~/.tmux.conf` before the plugin line:
+Configure palette trigger hotkey after the tpm loader line, it should become:
 
 ```tmux
-set -g @command-palette-key C-S-P
+run '~/.tmux/plugins/tpm/tpm'
+bind -T prefix ? tmux-command-palette
 ```
 
-Make sure your terminal + tmux combo support passing `Ctrl + Shift` to
-applications.
+Alternatevely to setup VSCode-like global trigger `Ctrl + Shift + P`
+
+```tmux
+run '~/.tmux/plugins/tpm/tpm'
+bind -n C-S-P tmux-command-palette
+```
+
+In that case you will need to make sure your terminal + tmux combo
+is set up to properly handle `Ctrl` + `Shift` + `Key` bindings.
+
+### 2. Trigger plugin installation
+
+press `Prefix + I` in tmux to install the plugin.
 
 ## Development
 
@@ -68,8 +75,9 @@ Run tests: `make test`
 
 `palette.generated.toml` — comprehensive source to build `fzf` input.
 
-`tmux-command-palette.tmux` — plugin entry point: binds the palette trigger
-key.
+`tmux-command-palette.tmux` — tpm entry point: registers the
+`tmux-command-palette` command via `command-alias[]`; the key binding is the
+user's.
 
 ## AI disclosure
 

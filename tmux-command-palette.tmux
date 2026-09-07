@@ -2,21 +2,15 @@
 
 CURRENT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# The palette key is an option, @command-palette-key:
-#   unset           -> prefix + ? (default, replaces the native help)
-#   set, e.g. C-S-P -> global key without any prefix (Ctrl+Shift+P style)
-key="$(tmux show-option -gv @command-palette-key 2>/dev/null)"
-if [ -z "$key" ]; then
-	table="prefix"
-	key="?"
-else
-	table="root"
+# Register the launch as a named command (once per server). The alias value
+# is expanded when a command is parsed, so `bind -n C-S-P
+# tmux-command-palette` stores run-shell -b "tmux display-popup ...":
+# run-shell expands #{...} in -b when the key is pressed, while
+# display-popup does not expand -c/-E in 3.7c. -c and
+# TMUX_COMMAND_PALETTE_TTY target the client that pressed the key.
+# set -a appends (a plain set would wipe the whole array; a fixed index is
+# a global slot another plugin may take); the guard keeps reloads from
+# stacking duplicate entries.
+if ! tmux show-options -s 2>/dev/null | grep -q '^command-alias\[[0-9]*\] "tmux-command-palette='; then
+  tmux set -a -s command-alias 'tmux-command-palette=run-shell -b "tmux display-popup -c \"#{client_tty}\" -w 70% -h 50% -E \"TMUX_COMMAND_PALETTE_TTY=#{client_tty} TMUX_COMMAND_PALETTE_PANE=#{pane_id} python3 '"$CURRENT_DIR"'/palette.py\" || true"'
 fi
-
-# run-shell -b runs in the background so prefix mode exits; display-popup
-# needs a tty and -E closes the popup when the palette exits. #{client_tty}
-# is expanded by tmux when the binding runs: the popup and the
-# TMUX_COMMAND_PALETTE_TTY env var both target the client that pressed the key.
-palette_cmd='tmux display-popup -c #{client_tty} -w 70% -h 50% -E "TMUX_COMMAND_PALETTE_TTY=#{client_tty} TMUX_COMMAND_PALETTE_PANE=#{pane_id} python3 '"$CURRENT_DIR"'/palette.py" || true'
-
-tmux bind-key -T "$table" "$key" run-shell -b "$palette_cmd"
