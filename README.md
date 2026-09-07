@@ -27,18 +27,21 @@ Add the plugin to your tmux config:
 set -g @plugin 'NikolayXHD/tmux-command-palette'
 ```
 
-Configure palette trigger hotkey after the tpm loader line, it should become:
+Configure palette trigger hotkey above the tpm loader line, it should become:
 
 ```tmux
+bind -T prefix ? run-shell tmux-command-palette
 run '~/.tmux/plugins/tpm/tpm'
-bind -T prefix ? tmux-command-palette
 ```
+
+The `run-shell` prefix is a placeholder: the line parses before the
+plugin exists, and the plugin swaps it for the real command on load.
 
 Alternatevely to setup VSCode-like global trigger `Ctrl + Shift + P`
 
 ```tmux
+bind -n C-S-P run-shell tmux-command-palette
 run '~/.tmux/plugins/tpm/tpm'
-bind -n C-S-P tmux-command-palette
 ```
 
 In that case you will need to make sure your terminal + tmux combo
