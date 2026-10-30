@@ -13,6 +13,11 @@ from palette_data import (
     can_exec_command,
     source_file_command,
 )
+from palette_history import (
+    HISTORY_TABLE,
+    record_execution,
+    unescape_history_value,
+)
 
 # display-message shows on a client but returns immediately: it gets the
 # client injected like interactive commands, but runs synchronously.
@@ -90,32 +95,52 @@ def inject_run_shell_target(command: str, pane: str) -> str:
     return f"run-shell -t {pane} {tokens[1]}"
 
 
+def decode_history_identity(identity: str) -> str | None:
+    """Stored command behind a history row identity (hist|<escaped>).
+
+    Entry rows carry table|key and resolve through the live bindings; a
+    history row carries its command, so it re-runs even when no binding
+    performs it any more.
+    """
+    table, separator, key = identity.partition("|")
+    if table != HISTORY_TABLE or not separator:
+        return None
+    return unescape_history_value(key)
+
+
 def cmd_exec(selection: str, client_tty: str = "") -> int:
     """Execute the command of the selected entry if it can run detached.
 
-    `selection` is the fzf line: path\tdisplay\ttable|key, or a bare
-    table|key identity. `client_tty` is the tty of the client that opened
+    `selection` is the fzf line: path\tdisplay\t<table|key or hist|command>,
+    or a bare identity. `client_tty` is the tty of the client that opened
     the palette — passed through to interactive commands (command-prompt,
     confirm-before, display-menu, display-message) via -t so the prompt
     appears on the right client. The binding command is in tmux config
     syntax ({}, quotes, \\; separators) which the tmux CLI cannot parse from
-    argv — it is run through `tmux source-file -`, the config parser.
+    argv — it is run through `tmux source-file -`, the config parser. The
+    chosen command is appended to the palette history before it runs, so
+    the record survives whatever the command does to the popup.
     """
     try:
         identity = selection.rsplit("\t", 1)[-1]
     except (IndexError, ValueError):
         return 0
-    try:
-        table, key = identity.split("|", 1)
-    except ValueError:
+    command = decode_history_identity(identity)
+    if command is None:
+        try:
+            table, key = identity.split("|", 1)
+        except ValueError:
+            return 0
+        entry = next(
+            (e for e in build_full_entries() if e.table == table and e.key == key),
+            None,
+        )
+        if entry is None:
+            return 0
+        command = entry.command
+    if not can_exec_command(command, have_client_tty=bool(client_tty)):
         return 0
-    entries = build_full_entries()
-    entry = next((e for e in entries if e.table == table and e.key == key), None)
-    if entry is None or not can_exec_command(
-        entry.command, have_client_tty=bool(client_tty)
-    ):
-        return 0
-    command = entry.command
+    record_execution(command)
     head = command.lstrip()
     # interactive commands accept -t target-client; inject our client tty so
     # the prompt/menu shows on the client that selected the entry

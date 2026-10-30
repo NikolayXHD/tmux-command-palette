@@ -48,6 +48,28 @@ is set up to properly handle `Ctrl` + `Shift` + `Key` bindings.
 
 press `Prefix + I` in tmux to install the plugin.
 
+## Command history
+
+The palette records the commands it executes and suggests them (`↺`
+rows): with an empty query the list is the last N commands, most recent
+first — an empty history shows an empty list; while typing — up to N
+history commands matching the query, freshest first, on top of the binding
+search. A suggestion row carries its command in the hidden identity
+column, so it re-runs even when no key is bound to the command any more.
+
+`@command-palette-num-recent` — the size of the suggestion block
+(default 3):
+
+```tmux
+set -g @command-palette-num-recent 3
+```
+
+The history file `tmux-command-palette.history` lives next to
+`tmux-command-palette.toml`, in the fish history format: `- cmd:` / `when:`
+blocks with backslash and newline escaped exactly like fish writes its own
+history. One record per command: a repeat updates the record, `added_when`
+keeps the first execution.
+
 ## Development
 
 Entry point: `src/palette.py`. The personal alias file is kept up to date
@@ -59,7 +81,8 @@ standalone:
 - `--check` — check `palette.toml` is complete and current for this tmux
   version (every built-in command described, no stale entries), and that
   every alias lists the glossary synonyms of its command
-- `--exec table|key` — run one entry's command (for testing)
+- `--exec table|key` — run one entry's command (for testing); `--exec
+  hist|command` runs a history row's command
 
 Initial custom aliases `{tmux_config_dir}/tmux-command-palette.toml` are
 generated from `glossary.toml`:
@@ -81,6 +104,11 @@ Run tests: `make test`
 `src/palette_actions.py` — execution of a selected entry.
 
 `src/palette_ui.py` — `fzf` UI and line rendering.
+
+`src/palette_history.py` — command history: the fish-style file.
+
+`src/palette_suggest.sh` — the suggestion list: the recent block on top,
+the entries below.
 
 `palette.toml` — common search aliases, manually maintained in this repo.
 

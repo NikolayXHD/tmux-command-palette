@@ -1,6 +1,10 @@
 import unittest
 
-from palette_actions import inject_client_target, inject_run_shell_target
+from palette_actions import (
+    decode_history_identity,
+    inject_client_target,
+    inject_run_shell_target,
+)
 
 
 class InjectClientTargetTest(unittest.TestCase):
@@ -54,6 +58,23 @@ class InjectRunShellTargetTest(unittest.TestCase):
 
     def test_when_no_pane_then_unchanged(self):
         self.assertEqual(inject_run_shell_target("run-shell ls", ""), "run-shell ls")
+
+
+class DecodeHistoryIdentityTest(unittest.TestCase):
+    def test_when_hist_identity_then_command_decoded(self):
+        for identity, command in (
+            ("hist|kill-pane", "kill-pane"),
+            ("hist|for x in y\\necho $x\\nend", "for x in y\necho $x\nend"),
+            ("hist|run-shell 'a|b'", "run-shell 'a|b'"),
+            ("hist|printf \\\\n", "printf \\n"),
+        ):
+            with self.subTest(identity=identity):
+                self.assertEqual(decode_history_identity(identity), command)
+
+    def test_when_entry_identity_then_none(self):
+        for identity in ("prefix|K", "copy-mode|M-w", "", "hist"):
+            with self.subTest(identity=identity):
+                self.assertIsNone(decode_history_identity(identity))
 
 
 if __name__ == "__main__":

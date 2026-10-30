@@ -473,6 +473,27 @@ def prefix_key() -> str:
     return run_tmux(["show-options", "-gv", "prefix"]).strip()
 
 
+DEFAULT_NUM_RECENT = 3
+
+
+def num_recent() -> int:
+    """Suggestion block size (@command-palette-num-recent)."""
+    try:
+        raw = run_tmux(["show-options", "-gqv", "@command-palette-num-recent"])
+    except TmuxError:
+        return DEFAULT_NUM_RECENT
+    return parse_num_recent(raw)
+
+
+def parse_num_recent(raw: str) -> int:
+    """Option value -> block size; the default on garbage, 0 turns the block off."""
+    try:
+        value = int(raw.strip())
+    except ValueError:
+        return DEFAULT_NUM_RECENT
+    return value if value >= 0 else DEFAULT_NUM_RECENT
+
+
 # commands that cannot run detached: send-keys needs a mode context,
 # if-shell is a conditional wrapper. command-prompt/confirm-before and
 # display-menu are interactive but addressable: the executor injects

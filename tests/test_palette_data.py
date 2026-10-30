@@ -5,6 +5,7 @@ from palette_data import (
     Glossary,
     can_exec_command,
     non_stock_bindings,
+    parse_num_recent,
     sync_entries,
     source_file_command,
     toml_value,
@@ -211,6 +212,18 @@ class TomlValueTest(unittest.TestCase):
 
     def test_when_quotes_and_backslashes_then_escaped(self):
         self.assertEqual(toml_value('say "hi" \\ done'), '"say \\"hi\\" \\\\ done"')
+
+
+class ParseNumRecentTest(unittest.TestCase):
+    def test_when_numeric_value_then_block_size(self):
+        for raw, expected in (("3", 3), ("0", 0), (" 5 ", 5)):
+            with self.subTest(raw=raw):
+                self.assertEqual(parse_num_recent(raw), expected)
+
+    def test_when_garbage_then_default(self):
+        for raw in ("", "abc", "-1"):
+            with self.subTest(raw=raw):
+                self.assertEqual(parse_num_recent(raw), 3)
 
 
 if __name__ == "__main__":
